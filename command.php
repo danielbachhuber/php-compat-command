@@ -63,22 +63,6 @@ $php_compat_command = function() {
 	}
 	$results[] = $wp_result;
 
-	$plugins = array();
-	// @todo handle non-standard plugin dirs
-	foreach( glob( ABSPATH . '/wp-content/plugins/*/*.php' ) as $file ) {
-		$fp = fopen( $file, 'r' );
-		$file_data = fread( $fp, 8192 );
-		fclose( $fp );
-		$file_data = str_replace( "\r", "\n", $file_data );
-		if ( preg_match( '/^[ \t\/*#@]*' . preg_quote( 'Version', '/' ) . ':(.*)$/mi', $file_data, $match ) ) {
-			$plugins[] = array(
-				'path'     => $file,
-				'version'  => trim( $match[1] ),
-				'basename' => basename( dirname( $file ) ),
-			);
-		}
-	}
-
 	$scan_extension = function( $extension ) {
 		$result = array(
 			'scope'    => $extension['basename'],
@@ -106,6 +90,22 @@ $php_compat_command = function() {
 		}
 		return $result;
 	};
+
+	$plugins = array();
+	// @todo handle non-standard plugin dirs
+	foreach( glob( ABSPATH . '/wp-content/plugins/*/*.php' ) as $file ) {
+		$fp = fopen( $file, 'r' );
+		$file_data = fread( $fp, 8192 );
+		fclose( $fp );
+		$file_data = str_replace( "\r", "\n", $file_data );
+		if ( preg_match( '/^[ \t\/*#@]*' . preg_quote( 'Version', '/' ) . ':(.*)$/mi', $file_data, $match ) ) {
+			$plugins[] = array(
+				'path'     => $file,
+				'version'  => trim( $match[1] ),
+				'basename' => basename( dirname( $file ) ),
+			);
+		}
+	}
 
 	foreach( $plugins as $plugin ) {
 		$result = $scan_extension( $plugin );
