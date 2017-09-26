@@ -113,6 +113,28 @@ $php_compat_command = function() {
 		$results[] = $result;
 	}
 
+	$themes = array();
+	// @todo handle non-standard theme dirs
+	foreach( glob( ABSPATH . '/wp-content/themes/*/style.css' ) as $file ) {
+		$fp = fopen( $file, 'r' );
+		$file_data = fread( $fp, 8192 );
+		fclose( $fp );
+		$file_data = str_replace( "\r", "\n", $file_data );
+		if ( preg_match( '/^[ \t\/*#@]*' . preg_quote( 'Version', '/' ) . ':(.*)$/mi', $file_data, $match ) ) {
+			$themes[] = array(
+				'path'     => $file,
+				'version'  => trim( $match[1] ),
+				'basename' => basename( dirname( $file ) ),
+			);
+		}
+	}
+
+	foreach( $themes as $theme ) {
+		$result = $scan_extension( $theme );
+		$result['scope'] = 'theme:' . $result['scope'];
+		$results[] = $result;
+	}
+
 	$fields = array(
 		'scope',
 		'compat',
