@@ -1,8 +1,8 @@
 {
-    "name": "danielbachhuber/php-compat",
+    "name": "danielbachhuber/php-compat-command",
     "description": "",
     "type": "wp-cli-package",
-    "homepage": "https://github.com/danielbachhuber/php-compat",
+    "homepage": "https://github.com/danielbachhuber/php-compat-command",
     "license": "MIT",
     "authors": [],
     "minimum-stability": "dev",
