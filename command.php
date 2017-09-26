@@ -40,5 +40,85 @@ $php_compat_command = function() {
 		WP_CLI::error( 'PHPCompatibility standard is not installed.' );
 	}
 
+	if ( ! is_readable( ABSPATH . 'wp-includes/version.php' ) ) {
+		WP_CLI::error(
+			"This does not seem to be a WordPress install.\n" .
+			'Pass --path=`path/to/wordpress`'
+		);
+	}
+
+	global $wp_version;
+	include ABSPATH . 'wp-includes/version.php';
+
+	$results = array();
+	$wp_result = array(
+		'scope'   => 'wordpress',
+		'version' => $wp_version,
+		'files'   => '',
+	);
+	if ( version_compare( $wp_version, '4.4', '>=' ) ) {
+		$wp_result['compat'] = 'success';
+	} else {
+		$wp_result['compat'] = 'failure';
+	}
+	$results[] = $wp_result;
+
+	$plugins = array();
+	// @todo handle non-standard plugin dirs
+	foreach( glob( ABSPATH . '/wp-content/plugins/*/*.php' ) as $file ) {
+		$fp = fopen( $file, 'r' );
+		$file_data = fread( $fp, 8192 );
+		fclose( $fp );
+		$file_data = str_replace( "\r", "\n", $file_data );
+		if ( preg_match( '/^[ \t\/*#@]*' . preg_quote( 'Version', '/' ) . ':(.*)$/mi', $file_data, $match ) ) {
+			$plugins[] = array(
+				'path'     => $file,
+				'version'  => trim( $match[1] ),
+				'basename' => basename( dirname( $file ) ),
+			);
+		}
+	}
+
+	$scan_extension = function( $extension ) {
+		$result = array(
+			'scope'    => $extension['basename'],
+			'version'  => $extension['version'],
+		);
+		$descriptors = array(
+			0 => STDIN,
+			1 => array( 'pipe', 'w' ),
+			2 => array( 'pipe', 'w' ),
+		);
+		$base_check = 'phpcs --standard=PHPCompatibility --extensions=php --ignore=/node_modules/,/bower_components/,/svn/ --report=json';
+		$r = proc_open( $base_check . ' ' . escapeshellarg( dirname( $extension['path'] ) ), $descriptors, $pipes );
+		$stdout = stream_get_contents( $pipes[1] );
+		fclose( $pipes[1] );
+		$stderr = stream_get_contents( $pipes[2] );
+		fclose( $pipes[2] );
+		$return_code = proc_close( $r );
+		$scan_result = json_decode( $stdout, true );
+		$result['files'] = isset( $scan_result['files'] ) ? count( $scan_result['files'] ) : '';
+		if ( isset( $scan_result['totals']['errors'] )
+			&& 0 === $scan_result['totals']['errors'] ) {
+			$result['compat'] = 'success';
+		} else {
+			$result['compat'] = 'failure';
+		}
+		return $result;
+	};
+
+	foreach( $plugins as $plugin ) {
+		$result = $scan_extension( $plugin );
+		$result['scope'] = 'plugin:' . $result['scope'];
+		$results[] = $result;
+	}
+
+	$fields = array(
+		'scope',
+		'compat',
+		'version',
+		'files',
+	);
+	WP_CLI\Utils\format_items( 'table', $results, $fields );
 };
 WP_CLI::add_command( 'php-compat', $php_compat_command );
