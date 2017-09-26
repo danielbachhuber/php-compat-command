@@ -9,7 +9,16 @@ Quick links: [Using](#using) | [Installing](#installing) | [Contributing](#contr
 
 ## Using
 
+~~~
+wp php-compat [--path=<path>]
+~~~
 
+Calls PHPCS PHPCompatibility sniffs and interprets the results.
+
+**OPTIONS**
+
+	[--path=<path>]
+		Path to the WordPress install.
 
 ## Installing
 

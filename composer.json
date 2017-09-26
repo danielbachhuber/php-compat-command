@@ -10,7 +10,7 @@
     "autoload": {
         "files": [ "command.php" ]
     },
-    "extras": {
+    "extra": {
         "commands": [
             "php-compat"
         ]
