@@ -1,0 +1,1 @@
+Feature: Check PHP compatibility
