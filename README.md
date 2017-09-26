@@ -18,7 +18,7 @@ Calls PHPCS PHPCompatibility sniffs and interprets the results.
 **OPTIONS**
 
 	[--path=<path>]
-		Path to the WordPress install.
+		Path to the WordPress install. Defaults to current directory.
 
 ## Installing
 

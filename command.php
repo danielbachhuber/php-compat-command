@@ -12,7 +12,7 @@ if ( ! class_exists( 'WP_CLI' ) ) {
  * ## OPTIONS
  *
  * [--path=<path>]
- * : Path to the WordPress install.
+ * : Path to the WordPress install. Defaults to current directory.
  *
  * @when before_wp_load
  */
