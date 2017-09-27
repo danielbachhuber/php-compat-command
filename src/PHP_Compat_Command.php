@@ -56,6 +56,7 @@ class PHP_Compat_Command {
 			'type'    => 'core',
 			'version' => $wp_version,
 			'files'   => '',
+			'time'    => '',
 		);
 		if ( version_compare( $wp_version, '4.4', '>=' ) ) {
 			$wp_result['compat'] = 'success';
@@ -113,6 +114,7 @@ class PHP_Compat_Command {
 			'type',
 			'compat',
 			'version',
+			'time',
 			'files',
 		);
 		WP_CLI\Utils\format_items( 'table', $results, $fields );
@@ -135,12 +137,15 @@ class PHP_Compat_Command {
 			2 => array( 'pipe', 'w' ),
 		);
 		$base_check = 'phpcs --standard=PHPCompatibility --runtime-set testVersion 7.0 --extensions=php --ignore=/node_modules/,/bower_components/,/svn/ --report=json';
+		$start_time = microtime( true );
 		$r = proc_open( $base_check . ' ' . escapeshellarg( dirname( $extension['path'] ) ), $descriptors, $pipes );
 		$stdout = stream_get_contents( $pipes[1] );
 		fclose( $pipes[1] );
 		$stderr = stream_get_contents( $pipes[2] );
 		fclose( $pipes[2] );
 		$return_code = proc_close( $r );
+		$end_time = microtime( true ) - $start_time;
+		$result['time'] = round( $end_time, 2 ) . 's';
 		$scan_result = json_decode( $stdout, true );
 		$result['files'] = isset( $scan_result['files'] ) ? count( $scan_result['files'] ) : '';
 		if ( isset( $scan_result['totals']['errors'] )
