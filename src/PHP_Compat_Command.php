@@ -62,34 +62,6 @@ class PHP_Compat_Command {
 		}
 		$results[] = $wp_result;
 
-		$scan_extension = function( $extension ) {
-			$result = array(
-				'scope'    => $extension['basename'],
-				'version'  => $extension['version'],
-			);
-			$descriptors = array(
-				0 => STDIN,
-				1 => array( 'pipe', 'w' ),
-				2 => array( 'pipe', 'w' ),
-			);
-			$base_check = 'phpcs --standard=PHPCompatibility --extensions=php --ignore=/node_modules/,/bower_components/,/svn/ --report=json';
-			$r = proc_open( $base_check . ' ' . escapeshellarg( dirname( $extension['path'] ) ), $descriptors, $pipes );
-			$stdout = stream_get_contents( $pipes[1] );
-			fclose( $pipes[1] );
-			$stderr = stream_get_contents( $pipes[2] );
-			fclose( $pipes[2] );
-			$return_code = proc_close( $r );
-			$scan_result = json_decode( $stdout, true );
-			$result['files'] = isset( $scan_result['files'] ) ? count( $scan_result['files'] ) : '';
-			if ( isset( $scan_result['totals']['errors'] )
-				&& 0 === $scan_result['totals']['errors'] ) {
-				$result['compat'] = 'success';
-			} else {
-				$result['compat'] = 'failure';
-			}
-			return $result;
-		};
-
 		$plugins = array();
 		// @todo handle non-standard plugin dirs
 		foreach( glob( ABSPATH . '/wp-content/plugins/*/*.php' ) as $file ) {
@@ -107,7 +79,7 @@ class PHP_Compat_Command {
 		}
 
 		foreach( $plugins as $plugin ) {
-			$result = $scan_extension( $plugin );
+			$result = self::scan_extension( $plugin );
 			$result['scope'] = 'plugin:' . $result['scope'];
 			$results[] = $result;
 		}
@@ -129,7 +101,7 @@ class PHP_Compat_Command {
 		}
 
 		foreach( $themes as $theme ) {
-			$result = $scan_extension( $theme );
+			$result = self::scan_extension( $theme );
 			$result['scope'] = 'theme:' . $result['scope'];
 			$results[] = $result;
 		}
@@ -141,6 +113,40 @@ class PHP_Compat_Command {
 			'files',
 		);
 		WP_CLI\Utils\format_items( 'table', $results, $fields );
+	}
+
+	/**
+	 * Scan an extension for its PHP compatibility
+	 *
+	 * @param array $extension Details about the extension.
+	 * @return array
+	 */
+	private static function scan_extension( $extension ) {
+		$result = array(
+			'scope'    => $extension['basename'],
+			'version'  => $extension['version'],
+		);
+		$descriptors = array(
+			0 => STDIN,
+			1 => array( 'pipe', 'w' ),
+			2 => array( 'pipe', 'w' ),
+		);
+		$base_check = 'phpcs --standard=PHPCompatibility --extensions=php --ignore=/node_modules/,/bower_components/,/svn/ --report=json';
+		$r = proc_open( $base_check . ' ' . escapeshellarg( dirname( $extension['path'] ) ), $descriptors, $pipes );
+		$stdout = stream_get_contents( $pipes[1] );
+		fclose( $pipes[1] );
+		$stderr = stream_get_contents( $pipes[2] );
+		fclose( $pipes[2] );
+		$return_code = proc_close( $r );
+		$scan_result = json_decode( $stdout, true );
+		$result['files'] = isset( $scan_result['files'] ) ? count( $scan_result['files'] ) : '';
+		if ( isset( $scan_result['totals']['errors'] )
+			&& 0 === $scan_result['totals']['errors'] ) {
+			$result['compat'] = 'success';
+		} else {
+			$result['compat'] = 'failure';
+		}
+		return $result;
 	}
 
 }
