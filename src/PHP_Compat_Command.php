@@ -134,7 +134,7 @@ class PHP_Compat_Command {
 			1 => array( 'pipe', 'w' ),
 			2 => array( 'pipe', 'w' ),
 		);
-		$base_check = 'phpcs --standard=PHPCompatibility --extensions=php --ignore=/node_modules/,/bower_components/,/svn/ --report=json';
+		$base_check = 'phpcs --standard=PHPCompatibility --runtime-set testVersion 7.0 --extensions=php --ignore=/node_modules/,/bower_components/,/svn/ --report=json';
 		$r = proc_open( $base_check . ' ' . escapeshellarg( dirname( $extension['path'] ) ), $descriptors, $pipes );
 		$stdout = stream_get_contents( $pipes[1] );
 		fclose( $pipes[1] );
