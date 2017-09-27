@@ -21,6 +21,23 @@ and interprets the WordPress-specific results.
 	[--path=<path>]
 		Path to the WordPress install. Defaults to current directory.
 
+**EXAMPLES**
+
+    # Check compatibility of a WordPress install in the 'danielbachhuber' path
+    $ wp php-compat --path=danielbachhuber
+    +-----------------------+--------+---------+---------+-------+-------+
+    | name                  | type   | compat  | version | time  | files |
+    +-----------------------+--------+---------+---------+-------+-------+
+    | wordpress             | core   | success | 4.7.6   |       |       |
+    | akismet               | plugin | success | 3.2     | 1.39s | 13    |
+    | debug-bar             | plugin | success | 0.8.4   | 0.29s | 10    |
+    | oembed-gist           | plugin | success | 4.7.1   | 0.08s | 1     |
+    | danielbachhuber-theme | theme  | success | 0.0.0   | 0.81s | 30    |
+    | twentyfifteen         | theme  | success | 1.7     | 0.42s | 22    |
+    | twentyseventeen       | theme  | success | 1.1     | 0.63s | 35    |
+    | twentysixteen         | theme  | success | 1.3     | 0.5s  | 23    |
+    +-----------------------+--------+---------+---------+-------+-------+
+
 ## Installing
 
 Installing this package requires WP-CLI's latest stable release. Update to the latest stable release with `wp cli update`.
