@@ -1,6 +1,6 @@
 {
     "name": "danielbachhuber/php-compat-command",
-    "description": "",
+    "description": "Scan WordPress, plugins and themes for PHP version compatibility.",
     "type": "wp-cli-package",
     "homepage": "https://github.com/danielbachhuber/php-compat-command",
     "license": "MIT",

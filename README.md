@@ -1,7 +1,7 @@
 danielbachhuber/php-compat-command
 ==================================
 
-
+Scan WordPress, plugins and themes for PHP version compatibility.
 
 [![Build Status](https://travis-ci.org/danielbachhuber/php-compat-command.svg?branch=master)](https://travis-ci.org/danielbachhuber/php-compat-command)
 
@@ -13,7 +13,8 @@ Quick links: [Using](#using) | [Installing](#installing) | [Contributing](#contr
 wp php-compat [--path=<path>]
 ~~~
 
-Calls PHPCS PHPCompatibility sniffs and interprets the results.
+Uses the [PHPCompatibility PHPCS sniffs](https://github.com/wimg/PHPCompatibility)
+and interprets the WordPress-specific results.
 
 **OPTIONS**
 
@@ -22,7 +23,7 @@ Calls PHPCS PHPCompatibility sniffs and interprets the results.
 
 ## Installing
 
-Installing this package requires WP-CLI v1.3.0 or greater. Update to the latest stable release with `wp cli update`.
+Installing this package requires WP-CLI's latest stable release. Update to the latest stable release with `wp cli update`.
 
 Once you've done so, you can install this package with:
 

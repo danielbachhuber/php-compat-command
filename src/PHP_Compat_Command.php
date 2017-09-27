@@ -5,9 +5,10 @@ use WP_CLI\Utils;
 class PHP_Compat_Command {
 
 	/**
-	 * Scan WordPress to determine PHP compatibility.
+	 * Scan WordPress, plugins and themes for PHP version compatibility.
 	 *
-	 * Calls PHPCS PHPCompatibility sniffs and interprets the results.
+	 * Uses the [PHPCompatibility PHPCS sniffs](https://github.com/wimg/PHPCompatibility)
+	 * and interprets the WordPress-specific results.
 	 *
 	 * ## OPTIONS
 	 *
