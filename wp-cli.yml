@@ -1,2 +1,2 @@
 require:
-  - command.php
+  - php-compat-command.php

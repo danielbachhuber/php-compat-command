@@ -8,7 +8,8 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "autoload": {
-        "files": [ "command.php" ]
+        "psr-4": { "": "src/" },
+        "files": [ "php-compat-command.php" ]
     },
     "require": {
         "wp-cli/wp-cli": "*"
