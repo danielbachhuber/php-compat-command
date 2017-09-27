@@ -52,7 +52,8 @@ class PHP_Compat_Command {
 
 		$results = array();
 		$wp_result = array(
-			'scope'   => 'wordpress',
+			'name'    => 'wordpress',
+			'type'    => 'core',
 			'version' => $wp_version,
 			'files'   => '',
 		);
@@ -81,7 +82,7 @@ class PHP_Compat_Command {
 
 		foreach( $plugins as $plugin ) {
 			$result = self::scan_extension( $plugin );
-			$result['scope'] = 'plugin:' . $result['scope'];
+			$result['type'] = 'plugin';
 			$results[] = $result;
 		}
 
@@ -103,12 +104,13 @@ class PHP_Compat_Command {
 
 		foreach( $themes as $theme ) {
 			$result = self::scan_extension( $theme );
-			$result['scope'] = 'theme:' . $result['scope'];
+			$result['type'] = 'theme';
 			$results[] = $result;
 		}
 
 		$fields = array(
-			'scope',
+			'name',
+			'type',
 			'compat',
 			'version',
 			'files',
@@ -124,7 +126,7 @@ class PHP_Compat_Command {
 	 */
 	private static function scan_extension( $extension ) {
 		$result = array(
-			'scope'    => $extension['basename'],
+			'name'     => $extension['basename'],
 			'version'  => $extension['version'],
 		);
 		$descriptors = array(
