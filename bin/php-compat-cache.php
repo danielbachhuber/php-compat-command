@@ -40,6 +40,20 @@ WP_CLI::add_command( 'php-compat-cache', function( $args, $assoc_args ){
 	if ( 0 !== $code ) {
 		WP_CLI::error( 'Failed to create target cache dir: '. $cache_dir . $name );
 	}
+	
+	$phpcs_exec = false;
+	$base_path = dirname( dirname( __FILE__ ) );
+	$local_vendor = $base_path . '/vendor/bin/phpcs';
+	$package_dir_vendor = dirname( dirname( dirname( $base_path ) ) ) . '/bin/phpcs';
+	if ( file_exists( $local_vendor ) ) {
+		$phpcs_exec = 'php ' . $local_vendor;
+	} elseif( $package_dir_vendor ) {
+		$phpcs_exec = 'php ' . $package_dir_vendor;
+	}
+
+	if ( ! $phpcs_exec ) {
+		WP_CLI::error( "Couldn't find phpcs executable." );
+	}
 
 	$versions = array();
 	if ( 'plugin' === $type ) {
@@ -113,7 +127,7 @@ WP_CLI::add_command( 'php-compat-cache', function( $args, $assoc_args ){
 		);
 		foreach( $php_versions as $php_version ) {
 			WP_CLI::log( 'Scanning plugin for PHP ' . $php_version );
-			$base_check = 'phpcs --standard=PHPCompatibility --runtime-set testVersion ' . $php_version . ' --extensions=php --ignore=/node_modules/,/bower_components/,/svn/ --report=json';
+			$base_check = $phpcs_exec . ' --standard=PHPCompatibility --runtime-set testVersion ' . $php_version . ' --extensions=php --ignore=/node_modules/,/bower_components/,/svn/ --report=json';
 			$r = proc_open( $base_check . ' ' . escapeshellarg( $prepare_dir . $name ), $descriptors, $pipes );
 			$stdout = stream_get_contents( $pipes[1] );
 			fclose( $pipes[1] );
@@ -122,7 +136,7 @@ WP_CLI::add_command( 'php-compat-cache', function( $args, $assoc_args ){
 			proc_close( $r );
 			$scan_result = json_decode( $stdout, true );
 			if ( empty( $scan_result['totals'] ) ) {
-				WP_CLI::error( 'Scan failed. Please debug phpcs.' );
+				WP_CLI::error( 'Scan failed. Please debug phpcs: ' . var_export( $stdout, true ) );
 			}
 			$php_version_data = array(
 				'file_count'    => count( $scan_result['files'] ),

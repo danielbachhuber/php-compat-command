@@ -153,7 +153,22 @@ class PHP_Compat_Command {
 			1 => array( 'pipe', 'w' ),
 			2 => array( 'pipe', 'w' ),
 		);
-		$base_check = 'phpcs --standard=PHPCompatibility --runtime-set testVersion 7.0 --extensions=php --ignore=/node_modules/,/bower_components/,/svn/ --report=json';
+
+		$phpcs_exec = false;
+		$base_path = dirname( dirname( __FILE__ ) );
+		$local_vendor = $base_path . '/vendor/bin/phpcs';
+		$package_dir_vendor = dirname( dirname( dirname( $base_path ) ) ) . '/bin/phpcs';
+		if ( file_exists( $local_vendor ) ) {
+			$phpcs_exec = self::get_php_binary() . ' ' . $local_vendor;
+		} elseif( $package_dir_vendor ) {
+			$phpcs_exec = self::get_php_binary() . ' ' . $package_dir_vendor;
+		}
+
+		if ( ! $phpcs_exec ) {
+			WP_CLI::error( "Couldn't find phpcs executable." );
+		}
+
+		$base_check = $phpcs_exec ' --standard=PHPCompatibility --runtime-set testVersion 7.0 --extensions=php --ignore=/node_modules/,/bower_components/,/svn/ --report=json';
 		$start_time = microtime( true );
 		$r = proc_open( $base_check . ' ' . escapeshellarg( dirname( $extension['path'] ) ), $descriptors, $pipes );
 		$stdout = stream_get_contents( $pipes[1] );
@@ -172,6 +187,19 @@ class PHP_Compat_Command {
 			$result['compat'] = 'failure';
 		}
 		return $result;
+	}
+
+	private static function get_php_binary() {
+		if ( getenv( 'WP_CLI_PHP_USED' ) )
+			return getenv( 'WP_CLI_PHP_USED' );
+
+		if ( getenv( 'WP_CLI_PHP' ) )
+			return getenv( 'WP_CLI_PHP' );
+
+		if ( defined( 'PHP_BINARY' ) )
+			return PHP_BINARY;
+
+		return 'php';
 	}
 
 }
