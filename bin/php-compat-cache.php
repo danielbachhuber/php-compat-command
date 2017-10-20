@@ -163,10 +163,11 @@ WP_CLI::add_command( 'php-compat-cache', function( $args, $assoc_args ){
 		file_put_contents( $cache_dir . Utils\trailingslashit( $name ) . $name . '.' . $plugin_version . '.json', json_encode( $cache_data, JSON_PRETTY_PRINT ) );
 		WP_CLI::log( 'Wrote results to cache file.' );
 	}
-	
-	exec( 'rm -r ' . escapeshellarg( $prepare_dir ), $output, $code );
-	if ( 0 !== $code ) {
-		WP_CLI::error( 'Failed to remove prepare dir: '. $prepare_dir );
+	if ( is_dir( $prepare_dir ) ) {
+		exec( 'rm -r ' . escapeshellarg( $prepare_dir ), $output, $code );
+		if ( 0 !== $code ) {
+			WP_CLI::error( 'Failed to remove prepare dir: '. $prepare_dir );
+		}
 	}
 	WP_CLI::success( 'Scan and cache process complete.' );
 });
