@@ -15,6 +15,9 @@ class PHP_Compat_Command {
 	 * [--path=<path>]
 	 * : Path to the WordPress install. Defaults to current directory.
 	 *
+	 * [--fields=<fields>]
+	 * : Limit output to specific fields.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Check compatibility of a WordPress install in the 'danielbachhuber' path
@@ -126,14 +129,18 @@ class PHP_Compat_Command {
 			$results[] = $result;
 		}
 
-		$fields = array(
-			'name',
-			'type',
-			'compat',
-			'version',
-			'time',
-			'files',
-		);
+		if ( isset( $assoc_args['fields'] ) ) {
+			$fields = explode( ',', $assoc_args['fields'] );
+		} else {
+			$fields = array(
+				'name',
+				'type',
+				'compat',
+				'version',
+				'time',
+				'files',
+			);
+		}
 		WP_CLI\Utils\format_items( 'table', $results, $fields );
 	}
 
