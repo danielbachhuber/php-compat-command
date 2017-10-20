@@ -168,7 +168,7 @@ class PHP_Compat_Command {
 			WP_CLI::error( "Couldn't find phpcs executable." );
 		}
 
-		$base_check = $phpcs_exec ' --standard=PHPCompatibility --runtime-set testVersion 7.0 --extensions=php --ignore=/node_modules/,/bower_components/,/svn/ --report=json';
+		$base_check = $phpcs_exec . ' --standard=PHPCompatibility --runtime-set testVersion 7.0 --extensions=php --ignore=/node_modules/,/bower_components/,/svn/ --report=json';
 		$start_time = microtime( true );
 		$r = proc_open( $base_check . ' ' . escapeshellarg( dirname( $extension['path'] ) ), $descriptors, $pipes );
 		$stdout = stream_get_contents( $pipes[1] );
