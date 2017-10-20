@@ -12,6 +12,7 @@ use WP_CLI\Utils;
  * ---
  * options:
  *   - plugin
+ *   - theme
  * ---
  *
  * <name>
@@ -36,7 +37,7 @@ WP_CLI::add_command( 'php-compat-cache', function( $args, $assoc_args ){
 	}
 	$cache_dir = Utils\trailingslashit( realpath( $cache_dir ) );
 
-	exec( 'mkdir -p ' . escapeshellarg( $cache_dir . $name ), $output, $code );
+	exec( 'mkdir -p ' . escapeshellarg( $cache_dir . $type . 's/' . $name ), $output, $code );
 	if ( 0 !== $code ) {
 		WP_CLI::error( 'Failed to create target cache dir: '. $cache_dir . $name );
 	}
@@ -72,6 +73,21 @@ WP_CLI::add_command( 'php-compat-cache', function( $args, $assoc_args ){
 		// Versions are returned lowest to highest
 		$versions = array_reverse( $plugin_data['versions'], true );
 		unset( $versions['trunk'] );
+	} elseif ( 'theme' === $type ) {
+		$request_url = sprintf( 'https://api.wordpress.org/themes/info/1.1/?action=theme_information&request[slug]=%s&request[fields][versions]=true', $name );
+		$response = Utils\http_request( 'GET', $request_url );
+		if ( 200 !== $response->status_code ) {
+			WP_CLI::error( "{$response->status_code} HTTP response" );
+		}
+		if ( empty( $response->body ) || 'false' === $response->body ) {
+			WP_CLI::error( 'Theme not found.' );
+		}
+		$theme_data = json_decode( $response->body, true );
+		if ( empty( $theme_data['versions'] ) ) {
+			WP_CLI::error( 'No theme versions found.' );
+		}
+		// Versions are returned lowest to highest
+		$versions = array_reverse( $theme_data['versions'], true );
 	}
 
 	$base_tmp_dir = Utils\get_temp_dir();
@@ -160,7 +176,7 @@ WP_CLI::add_command( 'php-compat-cache', function( $args, $assoc_args ){
 			}
 			$cache_data['php_versions'][ $php_version ] = $php_version_data;
 		}
-		file_put_contents( $cache_dir . Utils\trailingslashit( $name ) . $name . '.' . $plugin_version . '.json', json_encode( $cache_data, JSON_PRETTY_PRINT ) );
+		file_put_contents( $cache_dir . $type . 's/' . Utils\trailingslashit( $name ) . $name . '.' . $plugin_version . '.json', json_encode( $cache_data, JSON_PRETTY_PRINT ) );
 		WP_CLI::log( 'Wrote results to cache file.' );
 	}
 	if ( is_dir( $prepare_dir ) ) {
