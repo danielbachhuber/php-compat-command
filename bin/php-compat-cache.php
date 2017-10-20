@@ -23,7 +23,7 @@ use WP_CLI\Utils;
  * [--prior_versions=<count>]
  * : How many prior versions to scan.
  * ---
- * default: 10
+ * default: 20
  * ---
  *
  * @when before_wp_load
