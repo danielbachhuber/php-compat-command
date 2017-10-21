@@ -76,7 +76,7 @@ class PHP_Compat_Command {
 			'type'    => 'core',
 			'version' => $wp_version,
 			'files'   => '',
-			'time'    => '',
+			'time'    => 'cached',
 		);
 		if ( version_compare( $wp_version, '4.4', '>=' ) ) {
 			$wp_result['compat'] = 'success';
@@ -95,6 +95,7 @@ class PHP_Compat_Command {
 			if ( preg_match( '/^[ \t\/*#@]*' . preg_quote( 'Version', '/' ) . ':(.*)$/mi', $file_data, $match ) ) {
 				$plugins[] = array(
 					'path'     => $file,
+					'type'     => 'plugin',
 					'version'  => trim( $match[1] ),
 					'basename' => basename( dirname( $file ) ),
 				);
@@ -117,6 +118,7 @@ class PHP_Compat_Command {
 			if ( preg_match( '/^[ \t\/*#@]*' . preg_quote( 'Version', '/' ) . ':(.*)$/mi', $file_data, $match ) ) {
 				$themes[] = array(
 					'path'     => $file,
+					'type'     => 'theme',
 					'version'  => trim( $match[1] ),
 					'basename' => basename( dirname( $file ) ),
 				);
@@ -160,6 +162,24 @@ class PHP_Compat_Command {
 			1 => array( 'pipe', 'w' ),
 			2 => array( 'pipe', 'w' ),
 		);
+
+		$php_compat_cache = getenv( 'WP_CLI_PHP_COMPAT_CACHE' );
+		if ( $php_compat_cache ) {
+			$cache_file = Utils\trailingslashit( $php_compat_cache ) . $extension['type'] . 's/' . $extension['basename'] . '/' . $extension['basename'] . '.' . $extension['version'] . '.json';
+			if ( file_exists( $cache_file ) ) {
+				$cache_data = json_decode( file_get_contents( $cache_file ), true );
+				if ( ! empty( $cache_data['php_versions']['7.0'] ) ) {
+					$result['time'] = 'cached';
+					$result['files'] = $cache_data['php_versions']['7.0']['file_count'];
+					if ( 0 === $cache_data['php_versions']['7.0']['error_count'] ) {
+						$result['compat'] = 'success';
+					} else {
+						$result['compat'] = 'failure';
+					}
+					return $result;
+				}
+			}
+		}
 
 		$phpcs_exec = false;
 		$base_path = dirname( dirname( __FILE__ ) );
