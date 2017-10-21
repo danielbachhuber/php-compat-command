@@ -17,6 +17,7 @@ Feature: Check PHP compatibility
       <?php
       putenv( 'WP_CLI_PHP_COMPAT_CACHE=php-compat-cache' );
       """
+    And I run `wp plugin update --all`
 
     When I run `wp --require={SRC_DIR}/bin/php-compat-cache.php php-compat-cache plugin akismet php-compat-cache --prior_versions=1`
     Then STDOUT should contain:

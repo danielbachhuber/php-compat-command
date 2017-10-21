@@ -45,7 +45,7 @@ WP_CLI::add_command( 'php-compat-cache', function( $args, $assoc_args ){
 	$phpcs_exec = false;
 	$base_path = dirname( dirname( __FILE__ ) );
 	$local_vendor = $base_path . '/vendor/bin/phpcs';
-	$package_dir_vendor = dirname( dirname( dirname( $base_path ) ) ) . '/bin/phpcs';
+	$package_dir_vendor = dirname( dirname( $base_path ) ) . '/bin/phpcs';
 	if ( file_exists( $local_vendor ) ) {
 		$phpcs_exec = 'php ' . $local_vendor;
 	} elseif( $package_dir_vendor ) {
