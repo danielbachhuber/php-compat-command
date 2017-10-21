@@ -165,7 +165,7 @@ class PHP_Compat_Command {
 
 		$php_compat_cache = getenv( 'WP_CLI_PHP_COMPAT_CACHE' );
 		if ( $php_compat_cache ) {
-			$cache_file = Utils\trailingslashit( $php_compat_cache ) . $extension['type'] . 's/' . $extension['basename'] . '/' . $extension['basename'] . '.' . $extension['version'] . '.json';
+			$cache_file = Utils\trailingslashit( realpath( $php_compat_cache ) ) . $extension['type'] . 's/' . $extension['basename'] . '/' . $extension['basename'] . '.' . $extension['version'] . '.json';
 			if ( file_exists( $cache_file ) ) {
 				$cache_data = json_decode( file_get_contents( $cache_file ), true );
 				if ( ! empty( $cache_data['php_versions']['7.0'] ) ) {
@@ -184,7 +184,7 @@ class PHP_Compat_Command {
 		$phpcs_exec = false;
 		$base_path = dirname( dirname( __FILE__ ) );
 		$local_vendor = $base_path . '/vendor/bin/phpcs';
-		$package_dir_vendor = dirname( dirname( dirname( $base_path ) ) ) . '/bin/phpcs';
+		$package_dir_vendor = dirname( dirname( $base_path ) ) . '/bin/phpcs';
 		if ( file_exists( $local_vendor ) ) {
 			$phpcs_exec = self::get_php_binary() . ' ' . $local_vendor;
 		} elseif( $package_dir_vendor ) {
