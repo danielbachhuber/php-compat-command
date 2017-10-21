@@ -67,7 +67,7 @@ WP_CLI::add_command( 'php-compat-cache', function( $args, $assoc_args ){
 			WP_CLI::error( "{$response->status_code} HTTP response" );
 		}
 		if ( empty( $response->body ) || 'null' === $response->body ) {
-			WP_CLI::error( 'Plugin not found.' );
+			WP_CLI::error( 'Plugin not found: ' . $name );
 		}
 		$plugin_data = json_decode( $response->body, true );
 		if ( empty( $plugin_data['versions'] ) ) {
@@ -83,7 +83,7 @@ WP_CLI::add_command( 'php-compat-cache', function( $args, $assoc_args ){
 			WP_CLI::error( "{$response->status_code} HTTP response" );
 		}
 		if ( empty( $response->body ) || 'false' === $response->body ) {
-			WP_CLI::error( 'Theme not found.' );
+			WP_CLI::error( 'Theme not found: ' . $name );
 		}
 		$theme_data = json_decode( $response->body, true );
 		if ( empty( $theme_data['versions'] ) ) {
