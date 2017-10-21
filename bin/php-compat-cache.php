@@ -27,6 +27,9 @@ use WP_CLI\Utils;
  * default: 20
  * ---
  *
+ * [--force]
+ * : Overwrite existing cache results.
+ *
  * @when before_wp_load
  */
 WP_CLI::add_command( 'php-compat-cache', function( $args, $assoc_args ){
@@ -117,6 +120,11 @@ WP_CLI::add_command( 'php-compat-cache', function( $args, $assoc_args ){
 		if ( 0 !== $code ) {
 			WP_CLI::error( 'Failed to create prepare dir: '. $prepare_dir );
 		}
+		$cache_file = $cache_dir . $type . 's/' . Utils\trailingslashit( $name ) . $name . '.' . $plugin_version . '.json';
+		if ( file_exists( $cache_file ) && ! Utils\get_flag_value( $assoc_args, 'force' ) ) {
+			WP_CLI::log( 'Skipping, cache file already exists for ' . $name . ' version ' . $plugin_version . ' (' . $i . '/' . $prior_versions . ')' );
+			continue;
+		}
 		$download_fname = basename( $download_link );
 		WP_CLI::log( 'Downloading ' . $name . ' version ' . $plugin_version . ' (' . $i . '/' . $prior_versions . ')' );
 		exec( 'wget -q -O ' . escapeshellarg( $prepare_dir . $download_fname ) . ' ' . escapeshellarg( $download_link ), $output, $code );
@@ -176,7 +184,7 @@ WP_CLI::add_command( 'php-compat-cache', function( $args, $assoc_args ){
 			}
 			$cache_data['php_versions'][ $php_version ] = $php_version_data;
 		}
-		file_put_contents( $cache_dir . $type . 's/' . Utils\trailingslashit( $name ) . $name . '.' . $plugin_version . '.json', json_encode( $cache_data, JSON_PRETTY_PRINT ) );
+		file_put_contents( $cache_file, json_encode( $cache_data, JSON_PRETTY_PRINT ) );
 		WP_CLI::log( 'Wrote results to cache file.' );
 	}
 	if ( is_dir( $prepare_dir ) ) {
