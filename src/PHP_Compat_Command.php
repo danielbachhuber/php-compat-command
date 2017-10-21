@@ -15,6 +15,9 @@ class PHP_Compat_Command {
 	 * [--path=<path>]
 	 * : Path to the WordPress install. Defaults to current directory.
 	 *
+	 * [--fields=<fields>]
+	 * : Limit output to specific fields.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Check compatibility of a WordPress install in the 'danielbachhuber' path
@@ -73,7 +76,7 @@ class PHP_Compat_Command {
 			'type'    => 'core',
 			'version' => $wp_version,
 			'files'   => '',
-			'time'    => '',
+			'time'    => 'cached',
 		);
 		if ( version_compare( $wp_version, '4.4', '>=' ) ) {
 			$wp_result['compat'] = 'success';
@@ -92,6 +95,7 @@ class PHP_Compat_Command {
 			if ( preg_match( '/^[ \t\/*#@]*' . preg_quote( 'Version', '/' ) . ':(.*)$/mi', $file_data, $match ) ) {
 				$plugins[] = array(
 					'path'     => $file,
+					'type'     => 'plugin',
 					'version'  => trim( $match[1] ),
 					'basename' => basename( dirname( $file ) ),
 				);
@@ -114,6 +118,7 @@ class PHP_Compat_Command {
 			if ( preg_match( '/^[ \t\/*#@]*' . preg_quote( 'Version', '/' ) . ':(.*)$/mi', $file_data, $match ) ) {
 				$themes[] = array(
 					'path'     => $file,
+					'type'     => 'theme',
 					'version'  => trim( $match[1] ),
 					'basename' => basename( dirname( $file ) ),
 				);
@@ -126,14 +131,18 @@ class PHP_Compat_Command {
 			$results[] = $result;
 		}
 
-		$fields = array(
-			'name',
-			'type',
-			'compat',
-			'version',
-			'time',
-			'files',
-		);
+		if ( isset( $assoc_args['fields'] ) ) {
+			$fields = explode( ',', $assoc_args['fields'] );
+		} else {
+			$fields = array(
+				'name',
+				'type',
+				'compat',
+				'version',
+				'time',
+				'files',
+			);
+		}
 		WP_CLI\Utils\format_items( 'table', $results, $fields );
 	}
 
@@ -153,7 +162,40 @@ class PHP_Compat_Command {
 			1 => array( 'pipe', 'w' ),
 			2 => array( 'pipe', 'w' ),
 		);
-		$base_check = 'phpcs --standard=PHPCompatibility --runtime-set testVersion 7.0 --extensions=php --ignore=/node_modules/,/bower_components/,/svn/ --report=json';
+
+		$php_compat_cache = getenv( 'WP_CLI_PHP_COMPAT_CACHE' );
+		if ( $php_compat_cache ) {
+			$cache_file = Utils\trailingslashit( $php_compat_cache ) . $extension['type'] . 's/' . $extension['basename'] . '/' . $extension['basename'] . '.' . $extension['version'] . '.json';
+			if ( file_exists( $cache_file ) ) {
+				$cache_data = json_decode( file_get_contents( $cache_file ), true );
+				if ( ! empty( $cache_data['php_versions']['7.0'] ) ) {
+					$result['time'] = 'cached';
+					$result['files'] = $cache_data['php_versions']['7.0']['file_count'];
+					if ( 0 === $cache_data['php_versions']['7.0']['error_count'] ) {
+						$result['compat'] = 'success';
+					} else {
+						$result['compat'] = 'failure';
+					}
+					return $result;
+				}
+			}
+		}
+
+		$phpcs_exec = false;
+		$base_path = dirname( dirname( __FILE__ ) );
+		$local_vendor = $base_path . '/vendor/bin/phpcs';
+		$package_dir_vendor = dirname( dirname( dirname( $base_path ) ) ) . '/bin/phpcs';
+		if ( file_exists( $local_vendor ) ) {
+			$phpcs_exec = self::get_php_binary() . ' ' . $local_vendor;
+		} elseif( $package_dir_vendor ) {
+			$phpcs_exec = self::get_php_binary() . ' ' . $package_dir_vendor;
+		}
+
+		if ( ! $phpcs_exec ) {
+			WP_CLI::error( "Couldn't find phpcs executable." );
+		}
+
+		$base_check = $phpcs_exec . ' --standard=PHPCompatibility --runtime-set testVersion 7.0 --extensions=php --ignore=/node_modules/,/bower_components/,/svn/ --report=json';
 		$start_time = microtime( true );
 		$r = proc_open( $base_check . ' ' . escapeshellarg( dirname( $extension['path'] ) ), $descriptors, $pipes );
 		$stdout = stream_get_contents( $pipes[1] );
@@ -172,6 +214,19 @@ class PHP_Compat_Command {
 			$result['compat'] = 'failure';
 		}
 		return $result;
+	}
+
+	private static function get_php_binary() {
+		if ( getenv( 'WP_CLI_PHP_USED' ) )
+			return getenv( 'WP_CLI_PHP_USED' );
+
+		if ( getenv( 'WP_CLI_PHP' ) )
+			return getenv( 'WP_CLI_PHP' );
+
+		if ( defined( 'PHP_BINARY' ) )
+			return PHP_BINARY;
+
+		return 'php';
 	}
 
 }
