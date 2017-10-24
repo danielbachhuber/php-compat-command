@@ -10,16 +10,22 @@ Quick links: [Using](#using) | [Installing](#installing) | [Contributing](#contr
 ## Using
 
 ~~~
-wp php-compat [--path=<path>]
+wp php-compat [--path=<path>] [--fields=<fields>]
 ~~~
 
 Uses the [PHPCompatibility PHPCS sniffs](https://github.com/wimg/PHPCompatibility)
 and interprets the WordPress-specific results.
 
+Speed up the scanning process by using [php-compat-cache](https://github.com/danielbachhuber/php-compat-cache), a collection of pre-scanned WordPress.org
+plugins and themes.
+
 **OPTIONS**
 
 	[--path=<path>]
 		Path to the WordPress install. Defaults to current directory.
+
+	[--fields=<fields>]
+		Limit output to specific fields.
 
 **EXAMPLES**
 
@@ -37,6 +43,22 @@ and interprets the WordPress-specific results.
     | twentyseventeen       | theme  | success | 1.1     | 0.63s | 35    |
     | twentysixteen         | theme  | success | 1.3     | 0.5s  | 23    |
     +-----------------------+--------+---------+---------+-------+-------+
+
+    # Use php-compat-cache to speed up scanning process
+    $ git clone https://github.com/danielbachhuber/php-compat-cache.git ~/php-compat-cache
+    $ WP_CLI_PHP_COMPAT_CACHE=~/php-compat-cache wp php-compat --path=danielbachhuber
+    +-----------------------+--------+---------+---------+--------+-------+
+    | name                  | type   | compat  | version | time   | files |
+    +-----------------------+--------+---------+---------+--------+-------+
+    | wordpress             | core   | success | 4.7.6   | cached |       |
+    | akismet               | plugin | success | 3.2     | cached | 13    |
+    | debug-bar             | plugin | success | 0.8.4   | 0.14s  | 10    |
+    | oembed-gist           | plugin | success | 4.7.1   | 0.07s  | 1     |
+    | danielbachhuber-theme | theme  | success | 0.0.0   | 0.36s  | 30    |
+    | twentyfifteen         | theme  | success | 1.7     | cached | 22    |
+    | twentyseventeen       | theme  | success | 1.1     | cached | 35    |
+    | twentysixteen         | theme  | success | 1.3     | cached | 23    |
+    +-----------------------+--------+---------+---------+--------+-------+
 
 ## Installing
 
