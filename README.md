@@ -10,11 +10,12 @@ Quick links: [Using](#using) | [Installing](#installing) | [Contributing](#contr
 ## Using
 
 ~~~
-wp php-compat [--path=<path>] [--fields=<fields>]
+wp php-compat [--path=<path>] [--php_version=<version>] [--fields=<fields>]
 ~~~
 
 Uses the [PHPCompatibility PHPCS sniffs](https://github.com/wimg/PHPCompatibility)
-and interprets the WordPress-specific results.
+and interprets the WordPress-specific results. Defaults to '7.0-' for scanning
+PHP 7.0 and above.
 
 Speed up the scanning process by using [php-compat-cache](https://github.com/danielbachhuber/php-compat-cache), a collection of pre-scanned WordPress.org
 plugins and themes.
@@ -23,6 +24,13 @@ plugins and themes.
 
 	[--path=<path>]
 		Path to the WordPress install. Defaults to current directory.
+
+	[--php_version=<version>]
+		Scan for support of a particular PHP version. Use '-' to indicate equal
+		or greater than (e.g. 7.0- for PHP 7.0 and above).
+		---
+		default: 7.0-
+		---
 
 	[--fields=<fields>]
 		Limit output to specific fields.

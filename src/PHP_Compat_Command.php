@@ -8,7 +8,8 @@ class PHP_Compat_Command {
 	 * Scan WordPress, plugins and themes for PHP version compatibility.
 	 *
 	 * Uses the [PHPCompatibility PHPCS sniffs](https://github.com/wimg/PHPCompatibility)
-	 * and interprets the WordPress-specific results.
+	 * and interprets the WordPress-specific results. Defaults to '7.0-' for scanning
+	 * PHP 7.0 and above.
 	 *
 	 * Speed up the scanning process by using [php-compat-cache](https://github.com/danielbachhuber/php-compat-cache), a collection of pre-scanned WordPress.org
 	 * plugins and themes.
@@ -17,6 +18,13 @@ class PHP_Compat_Command {
 	 *
 	 * [--path=<path>]
 	 * : Path to the WordPress install. Defaults to current directory.
+	 *
+	 * [--php_version=<version>]
+	 * : Scan for support of a particular PHP version. Use '-' to indicate equal
+	 * or greater than (e.g. 7.0- for PHP 7.0 and above).
+	 * ---
+	 * default: 7.0-
+	 * ---
 	 *
 	 * [--fields=<fields>]
 	 * : Limit output to specific fields.
@@ -86,6 +94,10 @@ class PHP_Compat_Command {
 			);
 		}
 
+		if ( ! preg_match( '#^[\d]\.[\d]-?$#', $assoc_args['php_version'] ) ) {
+			WP_CLI::error( 'php_version must match ^[\d]\.[\d]-?$' );
+		}
+
 		global $wp_version;
 		include ABSPATH . 'wp-includes/version.php';
 
@@ -122,7 +134,7 @@ class PHP_Compat_Command {
 		}
 
 		foreach( $plugins as $plugin ) {
-			$result = self::scan_extension( $plugin );
+			$result = self::scan_extension( $plugin, $assoc_args['php_version'] );
 			$result['type'] = 'plugin';
 			$results[] = $result;
 		}
@@ -145,7 +157,7 @@ class PHP_Compat_Command {
 		}
 
 		foreach( $themes as $theme ) {
-			$result = self::scan_extension( $theme );
+			$result = self::scan_extension( $theme, $assoc_args['php_version'] );
 			$result['type'] = 'theme';
 			$results[] = $result;
 		}
@@ -168,10 +180,11 @@ class PHP_Compat_Command {
 	/**
 	 * Scan an extension for its PHP compatibility
 	 *
-	 * @param array $extension Details about the extension.
+	 * @param array  $extension   Details about the extension.
+	 * @param string $php_version PHP version to scan for.
 	 * @return array
 	 */
-	private static function scan_extension( $extension ) {
+	private static function scan_extension( $extension, $php_version ) {
 		$result = array(
 			'name'     => $extension['basename'],
 			'version'  => $extension['version'],
@@ -187,16 +200,22 @@ class PHP_Compat_Command {
 			$cache_file = Utils\trailingslashit( realpath( $php_compat_cache ) ) . $extension['type'] . 's/' . $extension['basename'] . '/' . $extension['basename'] . '.' . $extension['version'] . '.json';
 			if ( file_exists( $cache_file ) ) {
 				$cache_data = json_decode( file_get_contents( $cache_file ), true );
-				if ( ! empty( $cache_data['php_versions']['7.0'] ) ) {
-					$result['time'] = 'cached';
-					$result['files'] = $cache_data['php_versions']['7.0']['file_count'];
-					if ( 0 === $cache_data['php_versions']['7.0']['error_count'] ) {
-						$result['compat'] = 'success';
-					} else {
-						$result['compat'] = 'failure';
-					}
-					return $result;
+				$greater_than = false;
+				if ( '-' === substr( $php_version, -1 ) ) {
+					$greater_than = true;
+					$php_version = substr( $php_version, 0, -1 );
 				}
+				$result['compat'] = 'success';
+				$result['time'] = 'cached';
+				foreach( $cache_data['php_versions'] as $phpv => $scan_data ) {
+					if ( $phpv === $php_version || ( $greater_than && version_compare( $phpv, $php_version, '>' ) ) ) {
+						$result['files'] = $scan_data['file_count'];
+						if ( ! isset( $scan_data['error_count'] ) || $scan_data['error_count'] > 0 ) {
+							$result['compat'] = 'failure';
+						}
+					}
+				}
+				return $result;
 			}
 		}
 
@@ -214,7 +233,7 @@ class PHP_Compat_Command {
 			WP_CLI::error( "Couldn't find phpcs executable." );
 		}
 
-		$base_check = $phpcs_exec . ' --standard=PHPCompatibility --runtime-set testVersion 7.0 --extensions=php --ignore=/node_modules/,/bower_components/,/svn/ --report=json';
+		$base_check = $phpcs_exec . ' --standard=PHPCompatibility --runtime-set testVersion ' . escapeshellarg( $php_version ) . ' --extensions=php --ignore=/node_modules/,/bower_components/,/svn/ --report=json';
 		$start_time = microtime( true );
 		$r = proc_open( $base_check . ' ' . escapeshellarg( dirname( $extension['path'] ) ), $descriptors, $pipes );
 		$stdout = stream_get_contents( $pipes[1] );
