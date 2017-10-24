@@ -21,6 +21,9 @@ use WP_CLI\Utils;
  * <cache-dir>
  * : Path to the cache directory.
  *
+ * [--version=<version>]
+ * : Scan a particular version.
+ *
  * [--prior_versions=<count>]
  * : How many prior versions to scan.
  * ---
@@ -44,7 +47,7 @@ WP_CLI::add_command( 'php-compat-cache', function( $args, $assoc_args ){
 	if ( 0 !== $code ) {
 		WP_CLI::error( 'Failed to create target cache dir: '. $cache_dir . $name );
 	}
-	
+
 	$phpcs_exec = false;
 	$base_path = dirname( dirname( __FILE__ ) );
 	$local_vendor = $base_path . '/vendor/bin/phpcs';
@@ -97,7 +100,12 @@ WP_CLI::add_command( 'php-compat-cache', function( $args, $assoc_args ){
 	$prepare_dir = Utils\trailingslashit( $base_tmp_dir ) . $name . '-php-compat-cache/';
 
 	$prior_versions = $assoc_args['prior_versions'] < count( $versions ) ? $assoc_args['prior_versions'] : count( $versions );
-	WP_CLI::log( 'Scanning prior ' . $prior_versions . ' of ' . count( $versions ) . ' total ' . $name . ' versions' );
+	if ( ! empty( $assoc_args['version'] ) ) {
+		$versions = isset( $versions[ $assoc_args['version'] ] ) ? array( $assoc_args['version'] => $versions[ $assoc_args['version'] ] ) : array();
+		$prior_versions = 1;
+	} else {
+		WP_CLI::log( 'Scanning prior ' . $prior_versions . ' of ' . count( $versions ) . ' total ' . $name . ' versions' );
+	}
 	$php_versions = array(
 		'5.2',
 		'5.3',
