@@ -187,7 +187,7 @@ WP_CLI::add_command( 'php-compat-cache', function( $args, $assoc_args ){
 				foreach( $fdata['messages'] as $message ) {
 					$message_type = strtolower( $message['type'] ) . 's';
 					$php_version_data[ $message_type ][] = $message['source'];
-					$php_version_data[ $message_type ] = array_unique( $php_version_data[ $message_type ] );
+					$php_version_data[ $message_type ] = array_values( array_unique( $php_version_data[ $message_type ] ) );
 				}
 			}
 			$cache_data['php_versions'][ $php_version ] = $php_version_data;
