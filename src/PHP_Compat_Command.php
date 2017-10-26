@@ -76,12 +76,13 @@ class PHP_Compat_Command {
 	 * @when before_wp_load
 	 */
 	public function __invoke( $args, $assoc_args ) {
+		$phpcs_exec = self::get_phpcs_exec();
 		$descriptors = array(
 			0 => STDIN,
 			1 => array( 'pipe', 'w' ),
 			2 => array( 'pipe', 'w' ),
 		);
-		$r = proc_open( 'phpcs -i', $descriptors, $pipes );
+		$r = proc_open( $phpcs_exec . ' -i', $descriptors, $pipes );
 		$stdout = stream_get_contents( $pipes[1] );
 		fclose( $pipes[1] );
 		$stderr = stream_get_contents( $pipes[2] );
@@ -230,19 +231,7 @@ class PHP_Compat_Command {
 			}
 		}
 
-		$phpcs_exec = false;
-		$base_path = dirname( dirname( __FILE__ ) );
-		$local_vendor = $base_path . '/vendor/bin/phpcs';
-		$package_dir_vendor = dirname( dirname( $base_path ) ) . '/bin/phpcs';
-		if ( file_exists( $local_vendor ) ) {
-			$phpcs_exec = self::get_php_binary() . ' ' . $local_vendor;
-		} elseif( $package_dir_vendor ) {
-			$phpcs_exec = self::get_php_binary() . ' ' . $package_dir_vendor;
-		}
-
-		if ( ! $phpcs_exec ) {
-			WP_CLI::error( "Couldn't find phpcs executable." );
-		}
+		$phpcs_exec = self::get_phpcs_exec();
 
 		$base_check = $phpcs_exec . ' --standard=PHPCompatibility --runtime-set testVersion ' . escapeshellarg( $php_version ) . ' --extensions=php --ignore=/node_modules/,/bower_components/,/svn/ --parallel=4 --report=json';
 		$start_time = microtime( true );
@@ -263,6 +252,23 @@ class PHP_Compat_Command {
 			$result['compat'] = 'failure';
 		}
 		return $result;
+	}
+
+	private static function get_phpcs_exec() {
+		$phpcs_exec = false;
+		$base_path = dirname( dirname( __FILE__ ) );
+		$local_vendor = $base_path . '/vendor/bin/phpcs';
+		$package_dir_vendor = dirname( dirname( $base_path ) ) . '/bin/phpcs';
+		if ( file_exists( $local_vendor ) ) {
+			$phpcs_exec = self::get_php_binary() . ' ' . $local_vendor;
+		} elseif( $package_dir_vendor ) {
+			$phpcs_exec = self::get_php_binary() . ' ' . $package_dir_vendor;
+		}
+
+		if ( ! $phpcs_exec ) {
+			WP_CLI::error( "Couldn't find phpcs executable." );
+		}
+		return $phpcs_exec;
 	}
 
 	private static function get_php_binary() {
