@@ -159,7 +159,7 @@ WP_CLI::add_command( 'php-compat-cache', function( $args, $assoc_args ){
 		);
 		foreach( $php_versions as $php_version ) {
 			WP_CLI::log( 'Scanning plugin for PHP ' . $php_version );
-			$base_check = $phpcs_exec . ' --standard=PHPCompatibility --runtime-set testVersion ' . $php_version . ' --extensions=php --ignore=/node_modules/,/bower_components/,/svn/ --report=json';
+			$base_check = $phpcs_exec . ' --standard=PHPCompatibility --runtime-set testVersion ' . $php_version . ' --extensions=php --ignore=/node_modules/,/bower_components/,/svn/ --parallel=4 --report=json';
 			$r = proc_open( $base_check . ' ' . escapeshellarg( $prepare_dir . $name ), $descriptors, $pipes );
 			$stdout = stream_get_contents( $pipes[1] );
 			fclose( $pipes[1] );
