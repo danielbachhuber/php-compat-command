@@ -10,7 +10,7 @@ Quick links: [Using](#using) | [Installing](#installing) | [Contributing](#contr
 ## Using
 
 ~~~
-wp php-compat [--path=<path>] [--php_version=<version>] [--fields=<fields>]
+wp php-compat [--path=<path>] [--php_version=<version>] [--fields=<fields>] [--format=<format>]
 ~~~
 
 Uses the [PHPCompatibility PHPCS sniffs](https://github.com/wimg/PHPCompatibility)
@@ -34,6 +34,17 @@ plugins and themes.
 
 	[--fields=<fields>]
 		Limit output to specific fields.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - yaml
+		---
 
 **EXAMPLES**
 

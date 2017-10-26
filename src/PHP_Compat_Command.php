@@ -29,6 +29,17 @@ class PHP_Compat_Command {
 	 * [--fields=<fields>]
 	 * : Limit output to specific fields.
 	 *
+	 * [--format=<format>]
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - yaml
+	 * ---
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Check compatibility of a WordPress install in the 'danielbachhuber' path
@@ -174,7 +185,7 @@ class PHP_Compat_Command {
 				'files',
 			);
 		}
-		WP_CLI\Utils\format_items( 'table', $results, $fields );
+		WP_CLI\Utils\format_items( $assoc_args['format'], $results, $fields );
 	}
 
 	/**
