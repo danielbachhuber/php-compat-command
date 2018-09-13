@@ -72,6 +72,31 @@ Feature: Check PHP compatibility
       | name            | type       | compat         | time      |
       | co-authors-plus | plugin     | success        | cached    |
 
+  Scenario: Plugin formally supports PHP 7 in a newer version
+    Given a WP install
+    And a php-compat-cache/plugins-php7-compat.txt file:
+      """
+      # Plugins and the minimum version they have formal PHP 7 compat.
+      woocommerce,3.3.0
+      """
+    And I run `wp plugin install woocommerce --version=3.2.6`
+
+    When I run `WP_CLI_PHP_COMPAT_CACHE=php-compat-cache wp php-compat --fields=name,type,compat,time`
+    Then STDOUT should be a table containing rows:
+      | name        | type       | compat         | time   |
+      | woocommerce | plugin     | with-update    | cached |
+
+    When I run `wp plugin update woocommerce`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+
+    When I run `WP_CLI_PHP_COMPAT_CACHE=php-compat-cache wp php-compat --fields=name,type,compat`
+    Then STDOUT should be a table containing rows:
+      | name        | type       | compat         |
+      | woocommerce | plugin     | success        |
+
    Scenario: Invalid php_version argument specified
      Given a WP install
 

@@ -17,8 +17,12 @@ Uses the [PHPCompatibility PHPCS sniffs](https://github.com/wimg/PHPCompatibilit
 and interprets the WordPress-specific results. Defaults to '7.0-' for scanning
 PHP 7.0 and above.
 
+If a theme or plugin is compatible, it results with `compat=success`. If
+there's an incompatibility, it results with `compat=failure`.
+
 Speed up the scanning process by using [php-compat-cache](https://github.com/danielbachhuber/php-compat-cache), a collection of pre-scanned WordPress.org
-plugins and themes.
+plugins and themes. If a theme or plugin is known to be compatible with
+an update, it results `compat=with-update`.
 
 **OPTIONS**
 
@@ -79,9 +83,22 @@ plugins and themes.
     | twentysixteen         | theme  | success | 1.3     | cached | 23    |
     +-----------------------+--------+---------+---------+--------+-------+
 
+    # Plugin is known to be compatible with an update
+    $ WP_CLI_PHP_COMPAT_CACHE=~/php-compat-cache wp php-compat
+    +-----------------+--------+--------------+---------+--------+-------+
+    | name            | type   | compat       | version | time   | files |
+    +-----------------+--------+--------------+---------+--------+-------+
+    | wordpress       | core   | success      | 4.9.8   | cached |       |
+    | akismet         | plugin | success      | 4.0.8   | cached | 13    |
+    | woocommerce     | plugin | with-update  | 3.2.6   | cached |       |
+    | twentyfifteen   | theme  | success      | 2.0     | 0.25s  | 22    |
+    | twentyseventeen | theme  | success      | 1.7     | 0.3s   | 35    |
+    | twentysixteen   | theme  | success      | 1.5     | 0.28s  | 23    |
+    +-----------------+--------+--------------+---------+--------+-------+
+
 ## Installing
 
-Installing this package requires WP-CLI's latest stable release. Update to the latest stable release with `wp cli update`.
+Installing this package requires WP-CLI v2 or greater. Update to the latest stable release with `wp cli update`.
 
 Once you've done so, you can install this package with:
 
@@ -111,7 +128,7 @@ Once you've decided to commit the time to seeing your pull request through, [ple
 
 ## Support
 
-Github issues aren't for general support questions, but there are other venues you can try: http://wp-cli.org/#support
+Github issues aren't for general support questions, but there are other venues you can try: https://wp-cli.org/#support
 
 
 *This README.md is generated dynamically from the project's codebase using `wp scaffold package-readme` ([doc](https://github.com/wp-cli/scaffold-package-command#wp-scaffold-package-readme)). To suggest changes, please submit a pull request against the corresponding part of the codebase.*

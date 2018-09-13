@@ -11,8 +11,12 @@ class PHP_Compat_Command {
 	 * and interprets the WordPress-specific results. Defaults to '7.0-' for scanning
 	 * PHP 7.0 and above.
 	 *
+	 * If a theme or plugin is compatible, it results with `compat=success`. If
+	 * there's an incompatibility, it results with `compat=failure`.
+	 *
 	 * Speed up the scanning process by using [php-compat-cache](https://github.com/danielbachhuber/php-compat-cache), a collection of pre-scanned WordPress.org
-	 * plugins and themes.
+	 * plugins and themes. If a theme or plugin is known to be compatible with
+	 * an update, it results `compat=with-update`.
 	 *
 	 * ## OPTIONS
 	 *
@@ -72,6 +76,19 @@ class PHP_Compat_Command {
 	 *     | twentyseventeen       | theme  | success | 1.1     | cached | 35    |
 	 *     | twentysixteen         | theme  | success | 1.3     | cached | 23    |
 	 *     +-----------------------+--------+---------+---------+--------+-------+
+	 *
+	 *     # Plugin is known to be compatible with an update
+	 *     $ WP_CLI_PHP_COMPAT_CACHE=~/php-compat-cache wp php-compat
+	 *     +-----------------+--------+--------------+---------+--------+-------+
+	 *     | name            | type   | compat       | version | time   | files |
+	 *     +-----------------+--------+--------------+---------+--------+-------+
+	 *     | wordpress       | core   | success      | 4.9.8   | cached |       |
+	 *     | akismet         | plugin | success      | 4.0.8   | cached | 13    |
+	 *     | woocommerce     | plugin | with-update  | 3.2.6   | cached |       |
+	 *     | twentyfifteen   | theme  | success      | 2.0     | 0.25s  | 22    |
+	 *     | twentyseventeen | theme  | success      | 1.7     | 0.3s   | 35    |
+	 *     | twentysixteen   | theme  | success      | 1.5     | 0.28s  | 23    |
+	 *     +-----------------+--------+--------------+---------+--------+-------+
 	 *
 	 * @when before_wp_load
 	 */
@@ -207,6 +224,14 @@ class PHP_Compat_Command {
 			2 => array( 'pipe', 'w' ),
 		);
 
+		$known_upgrade_version = self::get_extension_known_upgradable( $php_version, $extension['type'], $result['name'] );
+		if ( $known_upgrade_version && version_compare( $result['version'], $known_upgrade_version, '<' ) ) {
+			$result['compat'] = 'with-update';
+			$result['time'] = 'cached';
+			$result['files'] = '';
+			return $result;
+		}
+
 		$php_compat_cache = getenv( 'WP_CLI_PHP_COMPAT_CACHE' );
 		if ( $php_compat_cache ) {
 			$cache_file = Utils\trailingslashit( realpath( $php_compat_cache ) ) . $extension['type'] . 's/' . $extension['basename'] . '/' . $extension['basename'] . '.' . $extension['version'] . '.json';
@@ -252,6 +277,48 @@ class PHP_Compat_Command {
 			$result['compat'] = 'failure';
 		}
 		return $result;
+	}
+
+	/**
+	 * Some plugins and themes are known to be compatible with upgrade.
+	 *
+	 * @param string $php_version PHP version currently being checked.
+	 * @param string $type        Type of extension: theme or plugin.
+	 * @param string $name        Name of the extension.
+	 * @return string|false       Version string where the theme or plugin supports the version checked.
+	 */
+	private static function get_extension_known_upgradable( $php_version, $type, $name ) {
+		// Our scan cache only contains '7.0-' scans right now.
+		if ( '7.0-' !== $php_version ) {
+			return false;
+		}
+		static $file_data;
+		if ( ! isset( $file_data ) ) {
+			$file_data = array();
+		}
+
+		$php_compat_cache = getenv( 'WP_CLI_PHP_COMPAT_CACHE' );
+		if ( $php_compat_cache && ! isset( $file_data[ $type ] ) ) {
+			$file = Utils\trailingslashit( realpath( $php_compat_cache ) ) . $type . 's-php7-compat.txt';
+			$file_data[ $type ] = array();
+			if ( file_exists( $file ) ) {
+				$file_contents = file_get_contents( $file );
+				$lines = explode( PHP_EOL, trim( $file_contents ) );
+				if ( ! empty( $lines ) ) {
+					foreach ( $lines as $line ) {
+						if ( empty( $line ) ) {
+							continue;
+						}
+						if ( ! empty( $line[0] ) && '#' === $line[0] ) {
+							continue;
+						}
+						list( $supported_name, $supported_version ) = array_map( 'trim', explode( ',', $line ) );
+						$file_data[ $type ][ $supported_name ] = $supported_version;
+					}
+				}
+			}
+		}
+		return isset( $file_data[ $type ][ $name ] ) ? $file_data[ $type ][ $name ] : false;
 	}
 
 	private static function get_phpcs_exec() {
