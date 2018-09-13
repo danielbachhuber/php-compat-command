@@ -11,8 +11,12 @@ class PHP_Compat_Command {
 	 * and interprets the WordPress-specific results. Defaults to '7.0-' for scanning
 	 * PHP 7.0 and above.
 	 *
+	 * If a theme or plugin is compatible, it results with `compat=success`. If
+	 * there's an incompatibility, it results with `compat=failure`.
+	 *
 	 * Speed up the scanning process by using [php-compat-cache](https://github.com/danielbachhuber/php-compat-cache), a collection of pre-scanned WordPress.org
-	 * plugins and themes.
+	 * plugins and themes. If a theme or plugin is known to be compatible with
+	 * an update, it results `compat=with-update`.
 	 *
 	 * ## OPTIONS
 	 *
@@ -72,6 +76,19 @@ class PHP_Compat_Command {
 	 *     | twentyseventeen       | theme  | success | 1.1     | cached | 35    |
 	 *     | twentysixteen         | theme  | success | 1.3     | cached | 23    |
 	 *     +-----------------------+--------+---------+---------+--------+-------+
+	 *
+	 *     # Plugin is known to be compatible with an update
+	 *     $ WP_CLI_PHP_COMPAT_CACHE=~/php-compat-cache wp php-compat
+	 *     +-----------------+--------+--------------+---------+--------+-------+
+	 *     | name            | type   | compat       | version | time   | files |
+	 *     +-----------------+--------+--------------+---------+--------+-------+
+	 *     | wordpress       | core   | success      | 4.9.8   | cached |       |
+	 *     | akismet         | plugin | success      | 4.0.8   | cached | 13    |
+	 *     | woocommerce     | plugin | with-update  | 3.2.6   | cached |       |
+	 *     | twentyfifteen   | theme  | success      | 2.0     | 0.25s  | 22    |
+	 *     | twentyseventeen | theme  | success      | 1.7     | 0.3s   | 35    |
+	 *     | twentysixteen   | theme  | success      | 1.5     | 0.28s  | 23    |
+	 *     +-----------------+--------+--------------+---------+--------+-------+
 	 *
 	 * @when before_wp_load
 	 */
