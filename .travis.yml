@@ -2,6 +2,7 @@ sudo: false
 dist: trusty
 
 language: php
+php: 7.2
 
 notifications:
   email:
@@ -14,18 +15,12 @@ branches:
 
 cache:
   directories:
-    - vendor
     - $HOME/.composer/cache
 
 env:
   global:
     - PATH="$TRAVIS_BUILD_DIR/vendor/bin:$PATH"
     - WP_CLI_BIN_DIR="$TRAVIS_BUILD_DIR/vendor/bin"
-
-matrix:
-  include:
-    - php: 5.6
-      env: WP_VERSION=latest
 
 before_install:
   - |
@@ -35,14 +30,35 @@ before_install:
     else
       echo "xdebug.ini does not exist"
     fi
-
-install:
-  - composer require wp-cli/wp-cli:dev-master
-  - composer install
-  - bash bin/install-package-tests.sh
-
-before_script:
+  - |
+    # Raise PHP memory limit to 2048MB
+    echo 'memory_limit = 2048M' >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
   - composer validate
 
+install:
+  - composer install
+  - composer prepare-tests
+
 script:
-  - bash bin/test.sh
+  - composer phpunit
+  - composer behat
+
+jobs:
+  include:
+    - stage: sniff
+      script:
+        # - composer lint
+        - composer phpcs
+      env: BUILD=sniff
+    - stage: test
+      php: 7.2
+      env: WP_VERSION=latest
+    - stage: test
+      php: 7.1
+      env: WP_VERSION=latest
+    - stage: test
+      php: 7.0
+      env: WP_VERSION=latest
+    - stage: test
+      php: 5.6
+      env: WP_VERSION=latest

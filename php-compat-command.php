@@ -10,3 +10,4 @@ if ( file_exists( $autoload ) ) {
 }
 
 WP_CLI::add_command( 'php-compat', 'PHP_Compat_Command' );
+WP_CLI::add_command( 'php-compat-cache', 'PHP_Compat_Cache_Command' );
