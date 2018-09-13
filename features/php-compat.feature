@@ -14,7 +14,7 @@ Feature: Check PHP compatibility
     And I run `mkdir php-compat-cache`
     And I run `wp plugin update --all`
 
-    When I run `wp --require=./bin/php-compat-cache.php php-compat-cache plugin akismet php-compat-cache --prior_versions=1`
+    When I run `wp php-compat-cache plugin akismet php-compat-cache --prior_versions=1`
     Then STDOUT should contain:
       """
       Success:
@@ -32,7 +32,7 @@ Feature: Check PHP compatibility
     And I run `wp plugin install co-authors-plus --version=3.2.2`
     And I run `mkdir php-compat-cache`
 
-    When I run `wp --require=./bin/php-compat-cache.php php-compat-cache plugin co-authors-plus php-compat-cache --version=3.2.2`
+    When I run `wp php-compat-cache plugin co-authors-plus php-compat-cache --version=3.2.2`
     Then STDOUT should contain:
       """
       Downloading co-authors-plus version 3.2.2 (1/1)
