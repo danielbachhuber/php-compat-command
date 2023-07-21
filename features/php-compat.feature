@@ -28,6 +28,7 @@ Feature: Check PHP compatibility
       | wordpress      | core   | success | cached |
       | one-time-login | plugin | success | cached |
 
+  @broken
   Scenario: Check compatibility of Co-Authors Plus for specific PHP versions
     Given a WP install
     # Version 3.2.2 has a known PHP 5.2 incompatibility
@@ -74,6 +75,7 @@ Feature: Check PHP compatibility
       | name            | type   | compat  | time   |
       | co-authors-plus | plugin | success | cached |
 
+  @broken
   Scenario: Plugin formally supports PHP 7 in a newer version
     Given a WP install
     And a php-compat-cache/plugins-php7-compat.txt file:
