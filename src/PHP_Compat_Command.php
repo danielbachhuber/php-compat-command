@@ -217,6 +217,7 @@ class PHP_Compat_Command {
 		$result = array(
 			'name'     => $extension['basename'],
 			'version'  => $extension['version'],
+			'files'    => '',
 		);
 		$descriptors = array(
 			0 => STDIN,
