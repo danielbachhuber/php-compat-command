@@ -1,5 +1,6 @@
 Feature: Check PHP compatibility
 
+  @require-wp-latest
   Scenario: Check compatibility of a default WP install
     Given a WP install
 
@@ -9,6 +10,7 @@ Feature: Check PHP compatibility
       | wordpress | core   | success |
       | akismet   | plugin | success |
 
+  @require-wp-latest
   Scenario: Check compatibility of a default WP install with cache enabled
     Given a WP install
     And I run `wp plugin uninstall akismet`
@@ -101,6 +103,7 @@ Feature: Check PHP compatibility
       | name        | type   | compat  |
       | woocommerce | plugin | success |
 
+  @require-wp-latest
   Scenario: Invalid php_version argument specified
     Given a WP install
 
