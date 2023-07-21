@@ -8,32 +8,36 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "autoload": {
-        "psr-4": { "": "src/" },
-        "files": [ "php-compat-command.php" ]
+        "psr-4": {
+            "": "src/"
+        },
+        "files": [
+            "php-compat-command.php"
+        ]
     },
     "require": {
         "wp-cli/wp-cli": "^2",
-        "wimg/php-compatibility": "^8.0",
+        "phpcompatibility/php-compatibility": "^9.0",
         "dealerdirect/phpcodesniffer-composer-installer": "^0.4.3 || ^0.5 || ^0.6.2 || ^0.7.1 || ^1.0.0"
     },
     "require-dev": {
-        "behat/behat": "~2.5",
-        "wp-cli/wp-cli-tests": "^2",
+        "wp-cli/wp-cli-tests": "^3",
         "wp-cli/core-command": "^2",
         "wp-cli/extension-command": "^2"
     },
     "scripts": {
-      "lint": "run-linter-tests",
-      "phpcs": "run-phpcs-tests",
-      "phpunit": "run-php-unit-tests",
-      "behat": "run-behat-tests",
-      "prepare-tests": "install-package-tests",
-      "test": [
-          "@lint",
-          "@phpcs",
-          "@phpunit",
-          "@behat"
-      ]
+        "behat": "run-behat-tests",
+        "behat-rerun": "rerun-behat-tests",
+        "lint": "run-linter-tests",
+        "phpcs": "run-phpcs-tests",
+        "phpunit": "run-php-unit-tests",
+        "prepare-tests": "install-package-tests",
+        "test": [
+            "@lint",
+            "@phpcs",
+            "@phpunit",
+            "@behat"
+        ]
     },
     "extra": {
         "commands": [
