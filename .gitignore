@@ -7,4 +7,3 @@ vendor/
 *.swp
 *.txt
 *.log
-composer.lock
