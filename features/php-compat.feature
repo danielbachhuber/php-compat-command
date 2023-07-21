@@ -103,7 +103,6 @@ Feature: Check PHP compatibility
       | name        | type   | compat  |
       | woocommerce | plugin | success |
 
-  @broken-trunk
   Scenario: Invalid php_version argument specified
     Given a WP install
 
