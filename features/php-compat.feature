@@ -1,6 +1,6 @@
 Feature: Check PHP compatibility
 
-  @broken-trunk
+  @broken-trunk @require-wp-4.0
   Scenario: Check compatibility of a default WP install
     Given a WP install
 
@@ -10,7 +10,7 @@ Feature: Check PHP compatibility
       | wordpress | core   | success |
       | akismet   | plugin | success |
 
-  @broken-trunk
+  @broken-trunk @require-wp-4.0
   Scenario: Check compatibility of a default WP install with cache enabled
     Given a WP install
     And I run `wp plugin uninstall akismet`
