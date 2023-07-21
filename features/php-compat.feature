@@ -11,10 +11,12 @@ Feature: Check PHP compatibility
 
   Scenario: Check compatibility of a default WP install with cache enabled
     Given a WP install
+    And I run `wp plugin uninstall akismet`
+    And I run `wp plugin install one-time-login`
     And I run `mkdir php-compat-cache`
     And I run `wp plugin update --all`
 
-    When I run `wp php-compat-cache plugin akismet php-compat-cache --prior_versions=1`
+    When I run `wp php-compat-cache plugin one-time-login php-compat-cache --prior_versions=1`
     Then STDOUT should contain:
       """
       Success:
@@ -22,9 +24,9 @@ Feature: Check PHP compatibility
 
     When I run `WP_CLI_PHP_COMPAT_CACHE=php-compat-cache wp php-compat --fields=name,type,compat,time`
     Then STDOUT should be a table containing rows:
-      | name        | type       | compat         | time      |
-      | wordpress   | core       | success        | cached    |
-      | akismet     | plugin     | success        | cached    |
+      | name           | type   | compat  | time   |
+      | wordpress      | core   | success | cached |
+      | one-time-login | plugin | success | cached |
 
   Scenario: Check compatibility of Co-Authors Plus for specific PHP versions
     Given a WP install
